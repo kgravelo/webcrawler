@@ -14,9 +14,11 @@ public class Main {
 		System.out.println("Enter text to search:");
 		Scanner inputKeyword = new Scanner(System.in);
 
-		String text = inputKeyword.nextLine();
+		StringBuilder stringBuilder = new StringBuilder();
+		/* exact word match and not case sensitive */
+		stringBuilder.append(" ").append(inputKeyword.nextLine().toLowerCase()).append(" ");
 
 		WebCrawler webCrawler = new WebCrawler();
-		webCrawler.crawlWebsites(URLs, text);
+		webCrawler.crawlWebsites(URLs, stringBuilder.toString());
 	}
 }
