@@ -4,6 +4,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -15,22 +16,27 @@ public class WebCrawler {
 	/* only search in main website and links */
 	public void crawlWebsites(List<String> URLs, String keyword) {
 		for (String inputURL : URLs) {
+			URL url = null;
+			Document doc = null;
+
+			/* input url */
 			try {
-				URL url = new URL(inputURL);
-				String host = url.getHost();
-				this.analyzeURL(host, inputURL, keyword);
-
-				/* search the whole website through links */
-				Document doc = Jsoup.connect(inputURL).timeout(15000).get();
-				Elements links = doc.select("a[href]");
-
-				for (Element link : links) {
-					String linkUrl = link.attr("abs:href");
-					this.analyzeURL(host, linkUrl, keyword);
-				}
-
+				url = new URL(inputURL);
+				doc = Jsoup.connect(inputURL).timeout(15000).get();
 			} catch (IOException e) {
-				System.out.println(inputURL + " - (page 404) failed to retrieve data");
+				System.out.println(" - (page 404) failed to retrieve data");
+				continue;
+			}
+
+			/* search the whole website through links */
+			String host = url.getHost();
+			this.analyzeURL(host, inputURL, keyword);
+
+			Elements links = doc.select("a[href]");
+
+			for (Element link : links) {
+				String linkUrl = link.attr("abs:href");
+				this.analyzeURL(host, linkUrl, keyword);
 			}
 		}
 	}
@@ -40,15 +46,12 @@ public class WebCrawler {
 		url = url.strip();
 		if (!this.visitedURLs.contains(url) && url.contains(host)) {
 			System.out.print("Processing: " + url);
-			try {
-				if (!this.isURLAvailable(url)) {
-					System.out.print(" - url not accessible");
-					return;
-				}
 
+			try {
 				Document doc = Jsoup.connect(url).timeout(15000).get();
+
 				if (this.isTextFoundInPage(doc, keyword)) {
-					System.out.println(" - keyword '" + keyword + "' found ");
+					System.out.println(" - keyword '" + keyword.trim() + "' found ");
 				} else {
 					System.out.println(" - done");
 				}
@@ -61,7 +64,7 @@ public class WebCrawler {
 
 	/* check the page if text is found inside */
 	public boolean isTextFoundInPage(Document doc, String keyword) {
-		if (doc.text().contains(keyword)) {
+		if (doc.text().toLowerCase().contains(keyword)) {
 			return true;
 		}
 		return false;
