@@ -14,19 +14,18 @@ public class WebCrawler {
 
 	/* only search in main website and links */
 	public void crawlWebsites(List<String> URLs, String keyword) {
-
 		for (String inputURL : URLs) {
 			try {
 				URL url = new URL(inputURL);
-
 				String host = url.getHost();
-				Document doc = Jsoup.connect(inputURL).timeout(15000).get();
+				this.analyzeURL(host, inputURL, keyword);
 
 				/* search the whole website through links */
+				Document doc = Jsoup.connect(inputURL).timeout(15000).get();
 				Elements links = doc.select("a[href]");
+
 				for (Element link : links) {
 					String linkUrl = link.attr("abs:href");
-
 					this.analyzeURL(host, linkUrl, keyword);
 				}
 
@@ -39,28 +38,25 @@ public class WebCrawler {
 	/* analyze text inside page */
 	public void analyzeURL(String host, String url, String keyword) {
 		url = url.strip();
-
 		if (!this.visitedURLs.contains(url) && url.contains(host)) {
 			System.out.print("Processing: " + url);
-
 			try {
 				if (!this.isURLAvailable(url)) {
 					System.out.print(" - url not accessible");
+					return;
 				}
 
 				Document doc = Jsoup.connect(url).timeout(15000).get();
-
 				if (this.isTextFoundInPage(doc, keyword)) {
 					System.out.println(" - keyword '" + keyword + "' found ");
-				} else System.out.println(" - done");
-
+				} else {
+					System.out.println(" - done");
+				}
 			} catch (IOException e) {
 				System.out.println(" - (page 404) failed to retrieve data");
 			}
-
 			this.visitedURLs.add(url);
 		}
-
 	}
 
 	/* check the page if text is found inside */
