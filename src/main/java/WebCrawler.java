@@ -64,9 +64,15 @@ public class WebCrawler {
 
 	/* check the page if text is found inside */
 	public boolean isTextFoundInPage(Document doc, String keyword) {
-		if (doc.text().toLowerCase().contains(keyword)) {
-			return true;
+		//content
+		Set<String> texts = new HashSet<String>(doc.getAllElements().eachText());
+
+		for (String line : texts) {
+			if (line.toLowerCase().contains(keyword)) {
+				return true;
+			}
 		}
+
 		return false;
 	}
 
